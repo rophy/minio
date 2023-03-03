@@ -1,0 +1,7 @@
+releases:
+- name: ma
+  chart: helm/minio
+- name: mb
+  chart: helm/minio
+- name: mc
+  chart: helm/mc

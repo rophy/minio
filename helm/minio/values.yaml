@@ -13,8 +13,8 @@ clusterDomain: cluster.local
 ## Set default image, imageTag, and imagePullPolicy. mode is used to indicate the
 ##
 image:
-  repository: quay.io/minio/minio
-  tag: RELEASE.2022-03-17T06-34-49Z
+  repository: minio
+  tag: 0.4
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -71,8 +71,8 @@ priorityClassName: ""
 ## AccessKey and secretKey is generated when not set
 ## Distributed MinIO ref: https://docs.minio.io/docs/distributed-minio-quickstart-guide
 ##
-rootUser: ""
-rootPassword: ""
+rootUser: "admin"
+rootPassword: "Passw0rd"
 
 ## Use existing Secret that store following variables:
 ##
@@ -99,9 +99,9 @@ mountPath: "/export"
 bucketRoot: ""
 
 # Number of drives attached to a node
-drivesPerNode: 1
+drivesPerNode: 2
 # Number of MinIO containers running
-replicas: 16
+replicas: 2
 # Number of expanded MinIO clusters
 pools: 1
 
@@ -151,7 +151,7 @@ persistence:
   storageClass: ""
   VolumeName: ""
   accessMode: ReadWriteOnce
-  size: 500Gi
+  size: 1Gi
 
   ## If subPath is set mount a sub folder of a volume instead of the root of the volume.
   ## This is especially handy for volume plugins that don't natively support sub mounting (like glusterfs).
@@ -250,7 +250,7 @@ podLabels: {}
 ##
 resources:
   requests:
-    memory: 16Gi
+    memory: 64Mi
 
 ## List of policies to be created after minio install
 ##
@@ -311,20 +311,6 @@ makePolicyJob:
 ## List of users to be created after minio install
 ##
 users:
-  ## Username, password and policy to be assigned to the user
-  ## Default policies are [readonly|readwrite|writeonly|consoleAdmin|diagnostics]
-  ## Add new policies as explained here https://docs.min.io/docs/minio-multi-user-quickstart-guide.html
-  ## NOTE: this will fail if LDAP is enabled in your MinIO deployment
-  ## make sure to disable this if you are using LDAP.
-  - accessKey: console
-    secretKey: console123
-    policy: consoleAdmin
-  # Or you can refer to specific secret
-  #- accessKey: externalSecret
-  #  existingSecret: my-secret
-  #  existingSecretKey: password
-  #  policy: readonly
-
 
 ## Additional Annotations for the Kubernetes Job makeUserJob
 makeUserJob:
@@ -424,7 +410,7 @@ podDisruptionBudget:
 ## Specify the service account to use for the MinIO pods. If 'create' is set to 'false'
 ## and 'name' is left unspecified, the account 'default' will be used.
 serviceAccount:
-  create: true
+  create: false
   ## The name of the service account to use. If 'create' is 'true', a service account with that name
   ## will be created.
   name: "minio-sa"
