@@ -2,41 +2,37 @@
 
 set -e
 
-mc alias set ma http://ma-minio:9000 admin Passw0rd
-mc alias set mb http://mb-minio:9000 admin Passw0rd
-mc mb ma/bucket001
-mc mb ma/bucket002
-mc mb ma/bucket003
-mc mb ma/bucket004
-mc mb ma/bucket005
-mc mb ma/bucket006
-mc mb ma/bucket007
-mc mb ma/bucket008
-mc mb ma/bucket009
-mc mb ma/bucket010
-mc mb ma/bucket011
-mc mb ma/bucket012
+mc alias set ma0 http://ma-minio-0.ma-minio-svc:9000 admin Passw0rd
+mc alias set ma1 http://ma-minio-1.ma-minio-svc:9000 admin Passw0rd
+mc alias set mb0 http://mb-minio-0.mb-minio-svc:9000 admin Passw0rd
+mc alias set mb1 http://mb-minio-0.mb-minio-svc:9000 admin Passw0rd
+mc mb ma0/bucket1
+mc mb ma0/bucket002
+mc mb ma0/bucket003
+mc mb ma0/bucket004
+mc mb ma0/bucket005
+mc mb ma0/bucket006
+mc mb ma0/bucket007
+mc mb ma0/bucket008
+mc mb ma0/bucket009
+mc mb ma0/bucket010
+mc mb ma0/bucket011
+mc mb ma0/bucket012
 
 i=0
-while [ $i -ne 10000 ]
+while [ $i -ne 5000 ]
 do
     echo testing $i > /tmp/test$i.txt
     i=$(($i+1))
 done
 
-mc mirror /tmp/ ma/bucket002/
+mc mirror /tmp/ ma0/bucket002/
 
-mc admin replicate add ma mb &
+mc admin replicate add ma0/ mb0/ &
 DELETING=true
 while $DELETING;
 do
-    mc admin bucket remote rm ma/bucket002 --arn $(mc admin bucket remote ls ma/bucket002 | grep arn | tr -s ' ' | cut -d' ' -f3) && DELETING=false || DELETING=true
+    mc admin bucket remote rm ma0/bucket002 --arn $(mc admin bucket remote ls ma0/bucket002 | grep arn | tr -s ' ' | cut -d' ' -f3) && DELETING=false || DELETING=true
 done
-mc admin service restart ma
+mc admin service restart ma0/
 
-i=0
-while [ $i -ne 1000 ]
-do
-    echo testing $i > /tmp/new$i.txt
-    i=$(($i+1))
-done
