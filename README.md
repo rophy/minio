@@ -439,3 +439,55 @@ site-repl-53f9bf7... | 10       | Enabled  |                           |        
 
 ```
 
+
+## Verifying patched version
+
+Upgrade to patched build, re-create the broken site replication setup, and verify the differences:
+
+```bash
+> /mc/scripts/setup.sh
+...
+
+> mc admin replicate status ma0/
+Bucket replication status:
+●  2/12 Buckets in sync
+...
+
+# Find a bucket which have bucket replication.
+> mc replicate ls ma0/bucket001 --json | grep ID
+
+> mc replicate edit ma/bucket001 --id site-repl-afff6363-e5a5-4eec-8f9a-3d7f496fb036 --state disable
+mc: <ERROR> Could not modify replication rule. Cannot alter local replication config since this server is in a cluster replication setup.
+
+> mc replicate rm ma/bucket001 --all --force
+Replication configuration removed from ma/bucket001 successfully.
+
+# Same: removing bucket replication won't work even though it returned as succeeded.
+> mc replicate ls ma0/bucket001 --json | grep ID
+{"op":"","status":"success","url":"","rule":{"ID":"site-repl-afff6363-e5a5-4eec-8f9a-3d7f496fb036","Status":"Enabled","Priority":10,"DeleteMarkerReplication":{"Status":"Enabled"},"DeleteReplication":{"Status":"Enabled"},"Destination":{"Bucket":"arn:minio:replication::a1af300d-5796-4812-b06d-5e4be8f56c56:bucket001"},"Filter":{"And":{},"Tag":{}},"SourceSelectionCriteria":{"ReplicaModifications":{"Status":"Enabled"}},"ExistingObjectReplication":{"Status":"Enabled"}}}
+```
+
+With the patched version (e6aa2ebb5 PR minio/minio#15269), `mc admin replicate remove` now ignores bucket-level errors:
+
+```bash
+> mc admin replicate remove ma0/ --all --force
+All site(s) were removed successfully
+
+# Run through these commands, verify the outputs are the same as those in BASELINE section.
+
+# ma0, ma1, mb0, mb1: only ma1 will show as "enabled"
+> mc admin replicate info ma0/
+
+# same
+> mc admin replicate status ma0/
+
+# only ma1/ still have some bucket remote configurations.
+> mc admin bucket remote ls ma0/
+
+# 4 pods, 12 buckets should all be clear.
+> mc replicate ls ma0/bucket001
+
+# restart services, then re-run previous commands, verify same output as BASELINE.
+> mc admin replicate info ma0/
+
+```
