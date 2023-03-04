@@ -9,6 +9,7 @@
 
 # update image.tag in helm/minio/values.yaml accordingly
 > docker build -t minio:0.4 .
+> kind load docker-image minio:0.4
 
 # https://github.com/helmfile/helmfile
 > helmfile apply
