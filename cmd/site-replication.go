@@ -1896,7 +1896,6 @@ func (c *SiteReplicationSys) RemovePeerCluster(ctx context.Context, objectAPI Ob
 				return
 			}
 			if _, err = admClient.SRPeerRemove(ctx, rreq); err != nil {
-				fmt.Printf("RemovePeerCluster:SRPeerRemove: %s", err)
 				errs[pi.DeploymentID] = errSRPeerResp(fmt.Errorf("unable to update peer %s: %w", pi.Name, err))
 				return
 			}
@@ -1906,14 +1905,10 @@ func (c *SiteReplicationSys) RemovePeerCluster(ctx context.Context, objectAPI Ob
 
 	for dID, err := range errs {
 		if err != nil {
-			if strings.Contains(err.Error(), "The replication configuration was not found") {
-				fmt.Printf("RemovePeerCluster:ErrorAfterWait: Ignore replcation config errors %s", err)
-			} else {
-				return madmin.ReplicateRemoveStatus{
-					ErrDetail: err.Error(),
-					Status:    madmin.ReplicateRemoveStatusPartial,
-				}, errSRPeerResp(fmt.Errorf("unable to update peer %s: %w", c.state.Peers[dID].Name, err))
-			}
+			return madmin.ReplicateRemoveStatus{
+				ErrDetail: err.Error(),
+				Status:    madmin.ReplicateRemoveStatusPartial,
+			}, errSRPeerResp(fmt.Errorf("unable to update peer %s: %w", c.state.Peers[dID].Name, err))
 		}
 	}
 	// Update cluster state
@@ -1971,8 +1966,7 @@ func (c *SiteReplicationSys) InternalRemoveReq(ctx context.Context, objectAPI Ob
 		rmvEndpoints = append(rmvEndpoints, info.Endpoint)
 	}
 	if err := c.RemoveRemoteTargetsForEndpoint(ctx, objectAPI, rmvEndpoints, unlinkSelf); err != nil {
-		fmt.Printf("RemoveRemoteTargetsForEndpoint:ERROR: %s", err)
-		// return err
+		return err
 	}
 	var state srState
 	if !unlinkSelf {
