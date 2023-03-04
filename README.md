@@ -314,11 +314,9 @@ USAGE:
 
 Removed remote target for `bucket002` bucket successfully.
 Restart command successfully sent to `ma0/`. Type Ctrl-C to quit or wait to follow the status of the restart process.
-.....Requested sites were configured for replication successfully.
-Site replication error(s): Site ma0/ (2711a13c-c0fd-4e97-8ecc-d13649a64aeb): Site replication error(s): Site mb0/ (6ab2ccf8-628e-417c-b450-80b16cc69f59): Remote service endpoint or target bucket not available: bucket005
-        context canceled; Site mb0/ (6ab2ccf8-628e-417c-b450-80b16cc69f59): context canceled
+........mc: <ERROR> Unable to add sites for replication. Put "http://ma-minio-0.ma-minio-svc:9000/minio/admin/v3/site-replication/add": dial tcp 10.244.0.189:9000: connect: connection refused.
 
-Restarted `ma0/` successfully in 3 seconds
+Restarted `ma0/` successfully in 6 seconds
 
 
 # Verify cluster status
@@ -333,24 +331,26 @@ Deployment ID                        | Site Name       | Endpoint
 
 > mc admin replicate status ma0/
 Bucket replication status:
-●  4/12 Buckets in sync
+●  3/12 Buckets in sync
 
 Bucket          | MA0/            | MB0/
+bucket004       | ✗  in-sync      |   Bucket
+
+bucket005       | ✗  in-sync      |   Bucket
+
+bucket006       | ✗  in-sync      |   Bucket
+
+bucket010       | ✗  in-sync      |   Bucket
+
+bucket011       | ✗  in-sync      |   Bucket
+
 bucket007       | ✗  in-sync      |   Bucket
 
 bucket008       | ✗  in-sync      |   Bucket
 
 bucket009       | ✗  in-sync      |   Bucket
 
-bucket010       | ✗  in-sync      |   Bucket
-
-bucket011       | ✗  in-sync      |   Bucket
-
 bucket012       | ✗  in-sync      |   Bucket
-
-bucket1         | ✗  in-sync      |   Bucket
-
-bucket006       | ✗  in-sync      |   Bucket
 
 Policy replication status:
 ●  5/5 Policies in sync
@@ -361,47 +361,81 @@ No Users present
 Group replication status:
 No Groups present
 
-
-# remote bucket info is lost in ma, but still in bm
+# same for ma1
 > mc admin bucket remote ls ma0/
 Remote URL                           Source   ->Target    ARN                                                                   SYNC PROXY
-http://mb-minio-0.mb-minio-svc:9000  bucket004->bucket004 arn:minio:replication::0046a1f0-0f97-4b15-9079-489cecb612e8:bucket004      proxy
-http://mb-minio-0.mb-minio-svc:9000  bucket003->bucket003 arn:minio:replication::81be9cd8-db31-4287-a8c3-fcfcc6a770e3:bucket003      proxy
+http://mb-minio-0.mb-minio-svc:9000  bucket001->bucket001 arn:minio:replication::2a7dd034-15a6-4bf9-88f7-50203f6337e5:bucket001      proxy
+http://mb-minio-0.mb-minio-svc:9000  bucket003->bucket003 arn:minio:replication::6419ce67-f1ca-44f1-bedc-c799195a5f40:bucket003      proxy
 
-> mc admin bucket remote ls ma1/
-Remote URL                           Source   ->Target    ARN                                                                   SYNC PROXY
-http://mb-minio-0.mb-minio-svc:9000  bucket004->bucket004 arn:minio:replication::0046a1f0-0f97-4b15-9079-489cecb612e8:bucket004      proxy
-http://mb-minio-0.mb-minio-svc:9000  bucket003->bucket003 arn:minio:replication::81be9cd8-db31-4287-a8c3-fcfcc6a770e3:bucket003      proxy
-
+# same for mb1/
 > mc admin bucket remote ls mb0/
 Remote URL                           Source   ->Target    ARN                                                                   SYNC PROXY
-http://ma-minio-0.ma-minio-svc:9000  bucket002->bucket002 arn:minio:replication::000c5420-2f29-48c7-906f-6a46b8213c5e:bucket002      proxy
-http://ma-minio-0.ma-minio-svc:9000  bucket003->bucket003 arn:minio:replication::d56ff62b-8243-4484-aece-b1752db1c089:bucket003      proxy
-http://ma-minio-0.ma-minio-svc:9000  bucket004->bucket004 arn:minio:replication::ad344e33-c0d2-4fee-a749-dd57ec10a87a:bucket004      proxy
-
-> mc admin bucket remote ls mb1/
-Remote URL                           Source   ->Target    ARN                                                                   SYNC PROXY
-http://ma-minio-0.ma-minio-svc:9000  bucket002->bucket002 arn:minio:replication::000c5420-2f29-48c7-906f-6a46b8213c5e:bucket002      proxy
-http://ma-minio-0.ma-minio-svc:9000  bucket003->bucket003 arn:minio:replication::d56ff62b-8243-4484-aece-b1752db1c089:bucket003      proxy
-http://ma-minio-0.ma-minio-svc:9000  bucket004->bucket004 arn:minio:replication::ad344e33-c0d2-4fee-a749-dd57ec10a87a:bucket004      proxy
+http://ma-minio-0.ma-minio-svc:9000  bucket001->bucket001 arn:minio:replication::47ea19a0-e00b-47f8-a78f-a84957d590e3:bucket001      proxy
+http://ma-minio-0.ma-minio-svc:9000  bucket002->bucket002 arn:minio:replication::955efd6a-f1cb-4b12-bfd3-dd135802c93f:bucket002      proxy
+http://ma-minio-0.ma-minio-svc:9000  bucket003->bucket003 arn:minio:replication::a3a3a43b-bd75-47aa-ac37-bf2f23e6e9fe:bucket003      proxy
 
 
-# bucket replication configurations are incomplete and inconsistent between ma and mb.
+# bucket replication configurations
+> mc replicate ls ma0/bucket001
+ID                   | Priority | Status   | Prefix                    | Tags                      | DestBucket           | StorageClass
+site-repl-53f9bf7... | 10       | Enabled  |                           |                           | arn:minio:replica... |
+
 > mc replicate ls ma0/bucket002
-mc: <ERROR> Unable to list replication configuration: replication configuration not set.
+ID                   | Priority | Status   | Prefix                    | Tags                      | DestBucket           | StorageClass
+site-repl-53f9bf7... | 10       | Enabled  |                           |                           | arn:minio:replica... |
 
 > mc replicate ls ma0/bucket003
 ID                   | Priority | Status   | Prefix                    | Tags                      | DestBucket           | StorageClass
-site-repl-6ab2ccf... | 10       | Enabled  |
+site-repl-53f9bf7... | 10       | Enabled  |                           |                           | arn:minio:replica... |
 
-> mc replicate ls mb0/bucket002
+> mc replicate ls mb0/bucket004
+mc: <ERROR> Unable to get replication configuration. The specified bucket does not exist.
+
+# now try to remove site replication
+> mc admin replicate remove ma0 --force --all
+mc: <ERROR> Unable to remove cluster replication. Error received when contacting a peer site (unable to update peer ma0/: The replication configuration was not found: bucket001).
+
+# same for ma1
+> mc admin bucket remote ls ma0/
+Remote URL                           Source   ->Target    ARN                                                                   SYNC PROXY
+http://mb-minio-0.mb-minio-svc:9000  bucket001->bucket001 arn:minio:replication::2a7dd034-15a6-4bf9-88f7-50203f6337e5:bucket001      proxy
+http://mb-minio-0.mb-minio-svc:9000  bucket003->bucket003 arn:minio:replication::6419ce67-f1ca-44f1-bedc-c799195a5f40:bucket003      proxy
+
+# same for mb1
+> mc admin bucket remote ls mb0/
+No remote targets found for `mb0`.
+
+> mc replicate ls ma/bucket001
+mc: <ERROR> Unable to list replication configuration: replication configuration not set.
+
+> mc replicate ls ma/bucket002
 ID                   | Priority | Status   | Prefix                    | Tags                      | DestBucket           | StorageClass
-site-repl-2711a13... | 10       | Enabled  |
+site-repl-53f9bf7... | 10       | Enabled  |                           |                           | arn:minio:replica... |
 
-> mc replicate ls mb0/bucket003
+# same for all other buckets
+> mc replicate ls ma/bucket003
+mc: <ERROR> Unable to list replication configuration: replication configuration not set.
+
+# same for ball buckets
+> mc replicate ls mb0/bucket001
+mc: <ERROR> Unable to list replication configuration: replication configuration not set.
+
+# now try to "remove" the orphan bucket replication:
+> mc replicate ls ma/bucket002 --json | grep ID
+{"op":"","status":"success","url":"","rule":{"ID":"site-repl-53f9bf7c-4865-4674-9bc2-53e8464ca764","Status":"Enabled","Priority":10,"DeleteMarkerReplication":{"Status":"Enabled"},"DeleteReplication":{"Status":"Enabled"},"Destination":{"Bucket":"arn:minio:replication::6b7b816b-34f3-44a9-81c6-04c1d3bd67db:bucket002"},"Filter":{"And":{},"Tag":{}},"SourceSelectionCriteria":{"ReplicaModifications":{"Status":"Enabled"}},"ExistingObjectReplication":{"Status":"Enabled"}}}
+
+# cannot edit due to cluste replication not completed
+> mc replicate edit ma/bucket002 --id "site-repl-53f9bf7c-4865-4674-9bc2-53e8464ca764" --state disable
+mc: <ERROR> Could not modify replication rule. Cannot alter local replication config since this server is in a cluster replication setup.
+
+# delete looks like it works...
+> mc replicate rm ma/bucket002 --all --force
+Replication configuration removed from ma/bucket002 successfully.
+
+# but actually replication still exists
+> mc replicate ls ma0/bucket002
 ID                   | Priority | Status   | Prefix                    | Tags                      | DestBucket           | StorageClass
-site-repl-2711a13... | 10       | Enabled  |                           |                           | arn:minio:replica... |
-
+site-repl-53f9bf7... | 10       | Enabled  |                           |                           | arn:minio:replica... |
 
 ```
 

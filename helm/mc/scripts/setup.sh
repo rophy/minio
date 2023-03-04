@@ -36,6 +36,12 @@ while $DELETING;
 do
     mc admin bucket remote rm ma0/bucket002 --arn $(mc admin bucket remote ls ma0/bucket002 | grep arn | tr -s ' ' | cut -d' ' -f3) && DELETING=false || DELETING=true
 done
-mc admin service restart ma0/ &
+i=0
+while [ $i -ne 5000 ]
+do
+    echo testing $i > /tmp/test$i.txt
+    i=$(($i+1))
+done
+mc admin service restart ma0/
 
 
