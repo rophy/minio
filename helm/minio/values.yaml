@@ -13,8 +13,8 @@ clusterDomain: cluster.local
 ## Set default image, imageTag, and imagePullPolicy. mode is used to indicate the
 ##
 image:
-  repository: minio
-  tag: 0.4
+  repository: minio/minio
+  tag: RELEASE.2022-03-17T06-34-49Z.hotfix.be3c9f6a7
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
