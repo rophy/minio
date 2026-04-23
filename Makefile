@@ -215,6 +215,13 @@ docker: build ## builds minio docker container
 	@echo "Building minio docker image '$(TAG)'"
 	@docker build -q --no-cache -t $(TAG) . -f Dockerfile
 
+docker-build: ## builds minio docker image from source
+	@echo "Building minio docker image '$(TAG)' from source"
+	@docker build --no-cache -t $(TAG) \
+		--build-arg RELEASE=$(VERSION) \
+		--build-arg COMMIT_ID=$(shell git rev-parse HEAD) \
+		-f Dockerfile.build .
+
 test-resiliency: build
 	@echo "Running resiliency tests"
 	@(DOCKER_COMPOSE_FILE=$(PWD)/docs/resiliency/docker-compose.yaml env bash $(PWD)/docs/resiliency/resiliency-tests.sh)
