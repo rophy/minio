@@ -39,6 +39,7 @@ unset minio_env_vars
 
 # Paths
 export MINIO_BASE_DIR="${BITNAMI_ROOT_DIR}/minio"
+export MINIO_BIN_DIR="/usr/bin"
 export MINIO_CERTS_DIR="/certs"
 export MINIO_LOGS_DIR="${MINIO_BASE_DIR}/log"
 export MINIO_TMP_DIR="${MINIO_BASE_DIR}/tmp"

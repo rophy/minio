@@ -10,7 +10,9 @@ set -o pipefail
 . /opt/bitnami/scripts/minio-env.sh
 
 EXEC=$(command -v minio)
-ARGS=("server" "--certs-dir" "${MINIO_CERTS_DIR}" "--console-address" ":${MINIO_CONSOLE_PORT_NUMBER}" "--address" ":${MINIO_API_PORT_NUMBER}")
+ARGS=("server" "--certs-dir" "${MINIO_CERTS_DIR}" "--address" ":${MINIO_API_PORT_NUMBER}")
+browser="$(echo "$MINIO_BROWSER" | tr '[:upper:]' '[:lower:]')"
+[[ "$browser" = "on" ]] && ARGS+=("--console-address" ":${MINIO_CONSOLE_PORT_NUMBER}")
 ARGS+=("$@")
 
 if is_boolean_yes "$MINIO_DISTRIBUTED_MODE_ENABLED"; then
