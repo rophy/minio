@@ -220,7 +220,7 @@ docker-build: ## builds minio docker image from source
 	@docker build --no-cache -t $(TAG) \
 		--build-arg RELEASE=$(VERSION) \
 		--build-arg COMMIT_ID=$(shell git rev-parse HEAD) \
-		-f Dockerfile.build .
+		-f Dockerfile.release .
 
 test-resiliency: build
 	@echo "Running resiliency tests"
