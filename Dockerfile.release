@@ -34,14 +34,14 @@ RUN curl -sL https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc -o /go/b
     curl -sL https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc.sha256sum -o /go/bin/mc.sha256sum && \
     chmod +x /go/bin/mc
 
-# Verify mc binary signature using public key "RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav"
+# Verify mc binary signature
 RUN minisign -Vqm /go/bin/mc -x /go/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav
 
 COPY dockerscripts/download-static-curl.sh /build/download-static-curl
 RUN chmod +x /build/download-static-curl && \
     /build/download-static-curl
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:latest
+FROM debian:bookworm-slim
 
 ARG RELEASE
 
@@ -53,16 +53,15 @@ LABEL name="MinIO" \
       summary="MinIO is a High Performance Object Storage, API compatible with Amazon S3 cloud storage service." \
       description="MinIO object storage is fundamentally different. Designed for performance and the S3 API, it is 100% open-source. MinIO is ideal for large, private cloud environments with stringent security requirements and delivers mission-critical availability across a diverse range of workloads."
 
-ENV MINIO_ACCESS_KEY_FILE=access_key \
-    MINIO_SECRET_KEY_FILE=secret_key \
-    MINIO_ROOT_USER_FILE=access_key \
-    MINIO_ROOT_PASSWORD_FILE=secret_key \
-    MINIO_KMS_SECRET_KEY_FILE=kms_master_key \
-    MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav" \
-    MINIO_CONFIG_ENV_FILE=config.env \
-    MC_CONFIG_DIR=/tmp/.mc
+RUN apt-get update && apt-get install -y --no-install-recommends jq procps ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN chmod -R 777 /usr/bin
+ENV MINIO_UPDATE_MINISIGN_PUBKEY="RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav" \
+    MINIO_CONFIG_ENV_FILE=config.env \
+    MC_CONFIG_DIR=/tmp/.mc \
+    BITNAMI_APP_NAME=minio
+
+RUN useradd -r -u 1001 -g root minio
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /go/bin/minio /usr/bin/minio
@@ -73,8 +72,20 @@ COPY CREDITS /licenses/CREDITS
 COPY LICENSE /licenses/LICENSE
 COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 
+# Bitnami-compatible scripts
+COPY dockerscripts/bitnami/scripts/ /opt/bitnami/scripts/
+RUN chmod +x /opt/bitnami/scripts/minio/*.sh && \
+    chmod +x /opt/bitnami/scripts/*.sh && \
+    mkdir -p /opt/bitnami/minio/log /opt/bitnami/minio/tmp /opt/bitnami/minio/secrets \
+             /bitnami/minio/data /certs /.mc && \
+    chown -R 1001:root /opt/bitnami /bitnami /certs /.mc && \
+    chmod -R g+rwX /opt/bitnami/minio /bitnami /certs /.mc && \
+    ln -sf /dev/stdout /opt/bitnami/minio/log/minio-http.log
+
 EXPOSE 9000
 VOLUME ["/data"]
 
-ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
-CMD ["minio"]
+USER 1001
+
+ENTRYPOINT ["/opt/bitnami/scripts/minio/entrypoint.sh"]
+CMD ["/opt/bitnami/scripts/minio/run.sh"]
