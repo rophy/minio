@@ -11,8 +11,7 @@ WORKDIR /build
 
 RUN apk add -U --no-cache ca-certificates && \
     apk add -U --no-cache curl && \
-    apk add -U --no-cache bash && \
-    go install aead.dev/minisign/cmd/minisign@v0.2.1
+    apk add -U --no-cache bash
 
 COPY . .
 
@@ -28,18 +27,11 @@ RUN GOARCH=${TARGETARCH} go build -tags kqueue -trimpath \
     -X github.com/minio/minio/cmd.GOROOT=$(go env GOROOT)" \
     -o /go/bin/minio .
 
-# Download mc binary and signature files
-RUN curl -sL https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc -o /go/bin/mc && \
-    curl -sL https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc.minisig -o /go/bin/mc.minisig && \
-    curl -sL https://dl.min.io/client/mc/release/linux-${TARGETARCH}/mc.sha256sum -o /go/bin/mc.sha256sum && \
-    chmod +x /go/bin/mc
-
-# Verify mc binary signature
-RUN minisign -Vqm /go/bin/mc -x /go/bin/mc.minisig -P RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav
-
 COPY dockerscripts/download-static-curl.sh /build/download-static-curl
 RUN chmod +x /build/download-static-curl && \
     /build/download-static-curl
+
+FROM ghcr.io/rophy/mc:20260423-fcc2cb6 AS mc
 
 FROM debian:bookworm-slim
 
@@ -65,7 +57,7 @@ RUN useradd -r -u 1001 -g root minio
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /go/bin/minio /usr/bin/minio
-COPY --from=build /go/bin/mc* /usr/bin/
+COPY --from=mc /usr/bin/mc /usr/bin/mc
 COPY --from=build /go/bin/curl* /usr/bin/
 
 COPY CREDITS /licenses/CREDITS
