@@ -10,23 +10,23 @@ export BITNAMI_DEBUG="${BITNAMI_DEBUG:-false}"
 
 # _FILE env var expansion
 minio_client_env_vars=(
-    MINIO_CLIENT_CONF_DIR
-    MINIO_SERVER_HOST
-    MINIO_SERVER_PORT_NUMBER
-    MINIO_SERVER_SCHEME
-    MINIO_SERVER_ROOT_USER
-    MINIO_SERVER_ROOT_PASSWORD
+	MINIO_CLIENT_CONF_DIR
+	MINIO_SERVER_HOST
+	MINIO_SERVER_PORT_NUMBER
+	MINIO_SERVER_SCHEME
+	MINIO_SERVER_ROOT_USER
+	MINIO_SERVER_ROOT_PASSWORD
 )
 for env_var in "${minio_client_env_vars[@]}"; do
-    file_env_var="${env_var}_FILE"
-    if [[ -n "${!file_env_var:-}" ]]; then
-        if [[ -r "${!file_env_var:-}" ]]; then
-            export "${env_var}=$(< "${!file_env_var}")"
-            unset "${file_env_var}"
-        else
-            warn "Skipping export of '${env_var}'. '${!file_env_var:-}' is not readable."
-        fi
-    fi
+	file_env_var="${env_var}_FILE"
+	if [[ -n ${!file_env_var:-} ]]; then
+		if [[ -r ${!file_env_var:-} ]]; then
+			export "${env_var}=$(<"${!file_env_var}")"
+			unset "${file_env_var}"
+		else
+			warn "Skipping export of '${env_var}'. '${!file_env_var:-}' is not readable."
+		fi
+	fi
 done
 unset minio_client_env_vars
 

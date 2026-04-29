@@ -1,0 +1,15 @@
+[files]
+extend-exclude = [
+    "CREDITS",
+    "*.pem",
+    "*.cert",
+    # Upstream code — typos are pre-existing and not ours to fix
+    "cmd/",
+    "internal/",
+    "docs/",
+    ".git/",
+]
+
+[default.extend-identifiers]
+sterr = "sterr"
+cpy = "cpy"

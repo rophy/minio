@@ -14,29 +14,29 @@ minio_initialize
 minio_regenerate_keys
 
 if is_boolean_yes "$MINIO_SKIP_CLIENT"; then
-    debug "Skipping MinIO client configuration..."
+	debug "Skipping MinIO client configuration..."
 else
-    if [[ "$(echo "$MINIO_SERVER_SCHEME" | tr '[:upper:]' '[:lower:]')" = "https" ]]; then
-        [[ ! -d "${MINIO_CLIENT_CONF_DIR}/certs" ]] && mkdir -p "${MINIO_CLIENT_CONF_DIR}/certs"
-        [[ -d "${MINIO_CERTS_DIR}/CAs" ]] && cp -r "${MINIO_CERTS_DIR}/CAs/" "${MINIO_CLIENT_CONF_DIR}/certs/CAs"
-    fi
+	if [[ "$(echo "$MINIO_SERVER_SCHEME" | tr '[:upper:]' '[:lower:]')" == "https" ]]; then
+		[[ ! -d "${MINIO_CLIENT_CONF_DIR}/certs" ]] && mkdir -p "${MINIO_CLIENT_CONF_DIR}/certs"
+		[[ -d "${MINIO_CERTS_DIR}/CAs" ]] && cp -r "${MINIO_CERTS_DIR}/CAs/" "${MINIO_CLIENT_CONF_DIR}/certs/CAs"
+	fi
 
-    minio_start_bg
-    trap "minio_stop" EXIT
+	minio_start_bg
+	trap "minio_stop" EXIT
 
-    if is_boolean_yes "$MINIO_DISTRIBUTED_MODE_ENABLED" && is_distributed_ellipses_syntax; then
-        read -r -a drives <<<"$(minio_distributed_drives)"
-        data_drive="${drives[0]}"
-    fi
+	if is_boolean_yes "$MINIO_DISTRIBUTED_MODE_ENABLED" && is_distributed_ellipses_syntax; then
+		read -r -a drives <<<"$(minio_distributed_drives)"
+		data_drive="${drives[0]}"
+	fi
 
-    if ! retry_while "minio_client_configure_local ${data_drive:-MINIO_DATA_DIR}/.minio.sys/config/config.json"; then
-        error "Failed to add temporary MinIO server"
-        exit 1
-    fi
+	if ! retry_while "minio_client_configure_local ${data_drive:-MINIO_DATA_DIR}/.minio.sys/config/config.json"; then
+		error "Failed to add temporary MinIO server"
+		exit 1
+	fi
 
-    if is_boolean_yes "$MINIO_DISTRIBUTED_MODE_ENABLED"; then
-        sleep 5
-    fi
+	if is_boolean_yes "$MINIO_DISTRIBUTED_MODE_ENABLED"; then
+		sleep 5
+	fi
 
-    minio_create_default_buckets
+	minio_create_default_buckets
 fi
