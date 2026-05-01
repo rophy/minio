@@ -9,7 +9,7 @@ VERSION ?= $(shell git describe --tags)
 REPO ?= quay.io/minio
 TAG ?= $(REPO)/minio:$(VERSION)
 
-GOLANGCI_VERSION = v2.3.0
+GOLANGCI_VERSION = v2.11.4
 GOLANGCI_DIR = .bin/golangci/$(GOLANGCI_VERSION)
 GOLANGCI = $(GOLANGCI_DIR)/golangci-lint
 
