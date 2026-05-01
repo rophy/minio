@@ -1,4 +1,6 @@
 #!/bin/bash
+# Bitnami Helm chart compatibility setup script.
+# Validates config, initializes dirs, handles credential rotation and default buckets.
 
 set -o errexit
 set -o nounset

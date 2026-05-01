@@ -1,4 +1,7 @@
 #!/bin/bash
+# Bitnami Helm chart compatibility entrypoint.
+# Wraps MinIO startup with Bitnami env var handling (_FILE expansion,
+# MINIO_DEFAULT_BUCKETS, MINIO_DISTRIBUTED_MODE_ENABLED, etc.).
 
 set -o errexit
 set -o nounset

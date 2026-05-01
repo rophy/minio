@@ -45,8 +45,15 @@ COPY --from=build /go/bin/minio /usr/bin/minio
 COPY --from=mc /usr/bin/mc /usr/bin/mc
 COPY dockerscripts/docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
 
-ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+# Bitnami Helm chart compatibility layer:
+# These scripts handle Bitnami-specific env vars (MINIO_DEFAULT_BUCKETS,
+# MINIO_DISTRIBUTED_MODE_ENABLED, MINIO_*_FILE, etc.) so this image can be
+# used as a drop-in replacement in the Bitnami MinIO Helm chart.
+# See docs/bitnami-compat-status.md for supported env vars and test results.
+COPY dockerscripts/bitnami/scripts /opt/bitnami/scripts
+
+ENTRYPOINT ["/opt/bitnami/scripts/minio/entrypoint.sh"]
 
 VOLUME ["/data"]
 
-CMD ["minio"]
+CMD ["/opt/bitnami/scripts/minio/run.sh"]

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Bitnami Helm chart compatibility run script.
+# Translates Bitnami env vars into MinIO CLI flags and starts the server.
 
 set -o errexit
 set -o nounset
