@@ -15,6 +15,7 @@ function cleanup() {
 	docker system prune -f || true
 	docker volume prune -f || true
 	docker volume rm $(docker volume ls -q -f dangling=true) || true
+	docker network rm multipart-shared || true
 }
 
 cleanup
@@ -25,6 +26,8 @@ if [ ! -f ./mc ]; then
 fi
 
 export RELEASE=RELEASE.2023-08-29T23-07-35Z
+
+docker network create multipart-shared || true
 
 docker compose -f docker-compose-site1.yaml up -d
 docker compose -f docker-compose-site2.yaml up -d

@@ -76,6 +76,7 @@ jobs:
             docker volume rm ${volume} || true
           done
 
+          docker network rm multipart-shared || true
           docker rmi -f quay.io/minio/minio:${{ steps.vars.outputs.sha_short }}
           docker system prune -f || true
           docker volume prune -f || true
