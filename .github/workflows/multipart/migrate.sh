@@ -40,7 +40,15 @@ sleep 30s
 ./mc ready site1/
 ./mc ready site2/
 
-./mc admin replicate add site1 site2
+# Run replication setup from inside the Docker network so servers can
+# reach each other via container hostnames (not localhost).
+docker run --rm --net=multipart-shared \
+	-v "$(pwd)/mc:/usr/bin/mc" \
+	alpine /bin/sh -c "\
+		mc alias set site1 http://site1-nginx:9001 minioadmin minioadmin --api s3v4 && \
+		mc alias set site2 http://site2-nginx:9002 minioadmin minioadmin --api s3v4 && \
+		mc admin replicate add site1 site2"
+
 ./mc mb site1/testbucket/
 ./mc cp -r --quiet /usr/bin site1/testbucket/
 
